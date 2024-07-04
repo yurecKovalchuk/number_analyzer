@@ -1,61 +1,78 @@
-import 'package:args/args.dart';
+import 'dart:convert';
+import 'dart:io';
 
-const String version = '0.0.1';
+const String pathToFile = '/path/to/your/file.txt';
 
-ArgParser buildParser() {
-  return ArgParser()
-    ..addFlag(
-      'help',
-      abbr: 'h',
-      negatable: false,
-      help: 'Print this usage information.',
-    )
-    ..addFlag(
-      'verbose',
-      abbr: 'v',
-      negatable: false,
-      help: 'Show additional command output.',
-    )
-    ..addFlag(
-      'version',
-      negatable: false,
-      help: 'Print the tool version.',
-    );
-}
+void main() async {
+  final file = File(pathToFile);
 
-void printUsage(ArgParser argParser) {
-  print('Usage: dart number_analyzer.dart <flags> [arguments]');
-  print(argParser.usage);
-}
+  List<int> numbers = [];
+  int? maxNumber;
+  int? minNumber;
+  double median;
+  double average;
+  int sum = 0;
+  int count = 0;
 
-void main(List<String> arguments) {
-  final ArgParser argParser = buildParser();
-  try {
-    final ArgResults results = argParser.parse(arguments);
-    bool verbose = false;
+  List<int> longestIncreasingSequence = [];
+  List<int> currentIncreasingSequence = [];
+  List<int> longestDecreasingSequence = [];
+  List<int> currentDecreasingSequence = [];
 
-    // Process the parsed arguments.
-    if (results.wasParsed('help')) {
-      printUsage(argParser);
-      return;
+  await for (String line in file.openRead().transform(utf8.decoder).transform(LineSplitter())) {
+    int number = int.parse(line);
+    numbers.add(number);
+
+    if (maxNumber == null || number > maxNumber) {
+      maxNumber = number;
     }
-    if (results.wasParsed('version')) {
-      print('number_analyzer version: $version');
-      return;
-    }
-    if (results.wasParsed('verbose')) {
-      verbose = true;
+    if (minNumber == null || number < minNumber) {
+      minNumber = number;
     }
 
-    // Act on the arguments provided.
-    print('Positional arguments: ${results.rest}');
-    if (verbose) {
-      print('[VERBOSE] All arguments: ${results.arguments}');
+    sum += number;
+    count++;
+
+    if (currentIncreasingSequence.isEmpty || number > currentIncreasingSequence.last) {
+      currentIncreasingSequence.add(number);
+    } else {
+      if (currentIncreasingSequence.length > longestIncreasingSequence.length) {
+        longestIncreasingSequence = currentIncreasingSequence;
+      }
+      currentIncreasingSequence = [number];
     }
-  } on FormatException catch (e) {
-    // Print usage information if an invalid argument was provided.
-    print(e.message);
-    print('');
-    printUsage(argParser);
+
+    if (currentDecreasingSequence.isEmpty || number < currentDecreasingSequence.last) {
+      currentDecreasingSequence.add(number);
+    } else {
+      if (currentDecreasingSequence.length > longestDecreasingSequence.length) {
+        longestDecreasingSequence = currentDecreasingSequence;
+      }
+      currentDecreasingSequence = [number];
+    }
   }
+
+  if (currentIncreasingSequence.length > longestIncreasingSequence.length) {
+    longestIncreasingSequence = currentIncreasingSequence;
+  }
+  if (currentDecreasingSequence.length > longestDecreasingSequence.length) {
+    longestDecreasingSequence = currentDecreasingSequence;
+  }
+
+  average = sum / count;
+
+  numbers.sort();
+  int middle = numbers.length ~/ 2;
+  if (numbers.length % 2 == 1) {
+    median = numbers[middle].toDouble();
+  } else {
+    median = (numbers[middle - 1] + numbers[middle]) / 2;
+  }
+
+  print('Максимальне число: $maxNumber');
+  print('Мінімальне число: $minNumber');
+  print('Медіана: $median');
+  print('Середнє арифметичне: $average');
+  print('Найбільша збільшувальна послідовність: $longestIncreasingSequence');
+  print('Найбільша зменшувальна послідовність: $longestDecreasingSequence');
 }
