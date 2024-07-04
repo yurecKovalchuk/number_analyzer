@@ -16,3 +16,11 @@ A Dart application for analyzing large sets of integers.
 - Efficient File Processing: Utilizes efficient file reading techniques to handle large datasets.
 - Statistical Analysis: Implements various statistical functions to analyze the dataset.
 - Optional Sequence Analysis: Provides functionality to find the longest increasing and decreasing sequences in the dataset.
+
+# How to Use
+
+To analyze the dataset, you need to provide the path to the file. Follow these steps:
+1. Open the Dart file of the application.
+2. Locate the line of code that specifies the file path.
+3. Replace /path/to/your/file.txt with the actual path to your file.
+4. Save the changes and run the application.
